@@ -14,8 +14,10 @@ This repository intentionally excludes sessions, package caches, `node_modules`,
 
 ```bash
 npm install -g @earendil-works/pi-coding-agent
-mkdir -p ~/.pi/agent
-rsync -av settings.json extensions skills ~/.pi/agent/
+git clone https://github.com/NilsWickmanUCSONE/pi-config.git ~/pi-config
+~/pi-config/install.sh
 ```
 
-If package-backed resources are listed in `settings.json`, Pi can install/load them on the target machine via its normal package handling.
+`install.sh` symlinks this repo into `~/.pi/agent` and installs package-backed resources into `~/.pi/agent/npm`, including themes/extensions from `context-mode`, `pi-web-access`, and `pi-powerline-footer`.
+
+Restart pi after running the installer.
