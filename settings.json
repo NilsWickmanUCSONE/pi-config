@@ -1,0 +1,22 @@
+{
+  "lastChangelogVersion": "0.75.1",
+  "defaultProvider": "openai-codex",
+  "defaultModel": "gpt-5.5",
+  "defaultThinkingLevel": "medium",
+  "packages": [
+    "npm:context-mode",
+    "npm:pi-web-access",
+    {
+      "source": "npm:pi-powerline-footer",
+      "extensions": [
+        "+index.ts"
+      ]
+    }
+  ],
+  "enableInstallTelemetry": false,
+  "theme": "forge-ember-oxide",
+  "editorPaddingX": 0,
+  "powerline": {
+    "fixedEditor": false
+  }
+}

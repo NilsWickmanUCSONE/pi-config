@@ -1,0 +1,14 @@
+# Pi runtime/session state
+sessions/
+*.log
+
+# package installs / caches
+npm/node_modules/
+git/
+node_modules/
+
+# secrets / local overrides
+.env
+.env.*
+models.local.json
+*.secret.*
