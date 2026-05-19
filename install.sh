@@ -52,6 +52,23 @@ JSON
   npm install --omit=dev
 )
 
+# Re-apply locally modified package files that are intentionally tracked in
+# this repo. This keeps package customizations reproducible without committing
+# node_modules wholesale.
+if [ -d "$REPO_DIR/package-overlays" ]; then
+  for package_overlay in "$REPO_DIR"/package-overlays/*; do
+    [ -d "$package_overlay" ] || continue
+    package_name="$(basename "$package_overlay")"
+    package_target="$PI_AGENT_DIR/npm/node_modules/$package_name"
+    if [ -d "$package_target" ]; then
+      cp -R "$package_overlay"/. "$package_target"/
+      echo "Applied local package overlay: $package_name"
+    else
+      echo "Package overlay target missing, skipped: $package_name" >&2
+    fi
+  done
+fi
+
 if [ -d "$BACKUP_DIR" ]; then
   echo "Backed up previous Pi config to: $BACKUP_DIR"
 fi
