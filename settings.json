@@ -15,6 +15,7 @@
   ],
   "enableInstallTelemetry": false,
   "theme": "forge-ember-oxide",
+  "quietStartup": true,
   "editorPaddingX": 0,
   "powerline": {
     "fixedEditor": true
