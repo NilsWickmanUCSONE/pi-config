@@ -129,10 +129,10 @@ export interface SeparatorChars {
 }
 
 export const NERD_SEPARATORS: SeparatorChars = {
-  powerlineLeft: "\uE0B0",    // 
-  powerlineRight: "\uE0B2",   // 
-  powerlineThinLeft: "\uE0B1", // 
-  powerlineThinRight: "\uE0B3", // 
+  powerlineLeft: "\uE0B0",
+  powerlineRight: "\uE0B2",
+  powerlineThinLeft: "\uE0B1",
+  powerlineThinRight: "\uE0B3",
   slash: "/",
   pipe: "|",
   block: "█",
@@ -161,6 +161,9 @@ export function hasNerdFonts(): boolean {
   // User can set this env var to force Nerd Fonts
   if (process.env.POWERLINE_NERD_FONTS === "1") return true;
   if (process.env.POWERLINE_NERD_FONTS === "0") return false;
+
+  // Windows Terminal does not set TERM_PROGRAM in WSL, but it does set WT_SESSION.
+  if (process.env.WT_SESSION) return true;
   
   // Check for Ghostty (survives into tmux via GHOSTTY_RESOURCES_DIR)
   if (process.env.GHOSTTY_RESOURCES_DIR) return true;

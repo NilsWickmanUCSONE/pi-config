@@ -5,6 +5,10 @@ REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PI_AGENT_DIR="${PI_AGENT_DIR:-$HOME/.pi/agent}"
 BACKUP_DIR="$PI_AGENT_DIR/backup-before-pi-config-install-$(date +%Y%m%d-%H%M%S)"
 
+if [ "${PI_CONFIG_INSTALL_FONTS:-1}" = "1" ] && [ -x "$REPO_DIR/install-fonts.sh" ]; then
+  "$REPO_DIR/install-fonts.sh"
+fi
+
 mkdir -p "$PI_AGENT_DIR"
 
 link_item() {
