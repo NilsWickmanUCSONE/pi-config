@@ -69,6 +69,64 @@ if [ -d "$REPO_DIR/package-overlays" ]; then
   done
 fi
 
+# Local core patch: rename Pi's built-in new-session slash command from
+# /new to /clear. This keeps the change reproducible after reinstalling pi.
+node <<'NODE'
+const fs = require("node:fs");
+const path = require("node:path");
+const { execFileSync } = require("node:child_process");
+
+function resolvePiPackageRoot() {
+  const candidates = [];
+  try {
+    const npmRoot = execFileSync("npm", ["root", "-g"], { encoding: "utf8" }).trim();
+    candidates.push(path.join(npmRoot, "@earendil-works", "pi-coding-agent"));
+  } catch {}
+  try {
+    const piBin = execFileSync("sh", ["-lc", "command -v pi"], { encoding: "utf8" }).trim();
+    const shim = fs.readFileSync(piBin, "utf8");
+    const match = shim.match(/\"([^\"]+@earendil-works\/pi-coding-agent\/dist\/cli\.js)\"/);
+    if (match) {
+      const cliPath = match[1].replace("$basedir", path.dirname(piBin));
+      candidates.push(path.resolve(cliPath, "..", ".."));
+    }
+  } catch {}
+  try {
+    candidates.push(path.dirname(require.resolve("@earendil-works/pi-coding-agent/package.json")));
+  } catch {}
+
+  return candidates.find((candidate) => fs.existsSync(path.join(candidate, "dist", "core", "slash-commands.js")));
+}
+
+function replaceOnce(file, before, after) {
+  const text = fs.readFileSync(file, "utf8");
+  if (text.includes(after)) {
+    return false;
+  }
+  if (!text.includes(before)) {
+    throw new Error(`Expected text not found in ${file}`);
+  }
+  fs.writeFileSync(file, text.replace(before, after));
+  return true;
+}
+
+const packageRoot = resolvePiPackageRoot();
+if (!packageRoot) {
+  console.error("Could not locate @earendil-works/pi-coding-agent; skipped /clear core patch.");
+  process.exitCode = 1;
+} else {
+  const slashCommands = path.join(packageRoot, "dist", "core", "slash-commands.js");
+  const interactiveMode = path.join(packageRoot, "dist", "modes", "interactive", "interactive-mode.js");
+  replaceOnce(
+    slashCommands,
+    '    { name: "new", description: "Start a new session" },',
+    '    { name: "clear", description: "Start a new session" },',
+  );
+  replaceOnce(interactiveMode, 'text === "/new"', 'text === "/clear"');
+  console.log("Applied local Pi core patch: /new -> /clear");
+}
+NODE
+
 if [ -d "$BACKUP_DIR" ]; then
   echo "Backed up previous Pi config to: $BACKUP_DIR"
 fi
