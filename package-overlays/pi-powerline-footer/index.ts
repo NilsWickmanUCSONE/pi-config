@@ -2312,15 +2312,38 @@ export default function powerlineFooter(pi: ExtensionAPI) {
           : [];
         const aboveWidgetLines = fixedWidgetContainerAbove ? compositor.renderHidden(fixedWidgetContainerAbove, width) : [];
         const belowWidgetLines = fixedWidgetContainerBelow ? compositor.renderHidden(fixedWidgetContainerBelow, width) : [];
+        const rawEditorLines = fixedEditorContainer ? compositor.renderHidden(fixedEditorContainer, width) : [];
+        const autocompletePopupLineCount = typeof currentEditor?.__piAutocompletePopupLineCount === "number"
+          ? Math.max(0, Math.min(currentEditor.__piAutocompletePopupLineCount, rawEditorLines.length))
+          : 0;
+        const autocompletePopupLines = autocompletePopupLineCount > 0
+          ? rawEditorLines.slice(0, autocompletePopupLineCount)
+          : [];
+        const editorLines = autocompletePopupLineCount > 0
+          ? rawEditorLines.slice(autocompletePopupLineCount)
+          : rawEditorLines;
+        const powerlineStatusLines = renderPowerlineStatusLines(width);
+        const topLines = autocompletePopupLineCount > 0 ? [] : renderPowerlineTopLines(width, theme);
+        const secondaryLines = autocompletePopupLineCount > 0 ? [] : [...renderPowerlineSecondaryLines(width, theme), ...belowWidgetLines];
+        const transcriptLines = autocompletePopupLineCount > 0 ? [] : renderBashTranscriptLines(width, theme);
+        const lastPromptLines = autocompletePopupLineCount > 0 ? [] : renderLastPromptLines(width);
+        const reservedStatusLineCount = autocompletePopupLines.length + aboveWidgetLines.length + powerlineStatusLines.length + statusContainerLines.length;
+        const maxEditorLineCount = Math.max(1, terminalRows - 1 - reservedStatusLineCount);
+        const reservedEditorLines = autocompletePopupLineCount > 0 && editorLines.length > maxEditorLineCount
+          ? editorLines.slice(0, maxEditorLineCount)
+          : editorLines;
         return renderFixedEditorCluster({
           width,
           terminalRows,
-          statusLines: [...aboveWidgetLines, ...renderPowerlineStatusLines(width), ...statusContainerLines],
-          topLines: renderPowerlineTopLines(width, theme),
-          editorLines: fixedEditorContainer ? compositor.renderHidden(fixedEditorContainer, width) : [],
-          secondaryLines: [...renderPowerlineSecondaryLines(width, theme), ...belowWidgetLines],
-          transcriptLines: renderBashTranscriptLines(width, theme),
-          lastPromptLines: renderLastPromptLines(width),
+          // Put autocomplete in the fixed cluster above the powerline/status row.
+          // While autocomplete is open, hide optional cluster bands so SelectList's
+          // selected row and scroll indicator are not clipped by takeTail().
+          statusLines: [...autocompletePopupLines, ...aboveWidgetLines, ...powerlineStatusLines, ...statusContainerLines],
+          topLines,
+          editorLines: reservedEditorLines,
+          secondaryLines,
+          transcriptLines,
+          lastPromptLines,
         });
       },
     });
