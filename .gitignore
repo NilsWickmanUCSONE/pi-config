@@ -7,6 +7,9 @@ npm/node_modules/
 git/
 node_modules/
 
+# generated verification artifacts
+artifacts/
+
 # secrets / local overrides
 .env
 .env.*
