@@ -18,6 +18,6 @@
   "quietStartup": true,
   "editorPaddingX": 0,
   "powerline": {
-    "fixedEditor": false
+    "fixedEditor": true
   }
 }
