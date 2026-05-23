@@ -2345,13 +2345,14 @@ export default function powerlineFooter(pi: ExtensionAPI) {
         const powerlineStatusLines = autocompleteOpen ? [] : renderPowerlineStatusLines(width);
         const activeAboveWidgetLines = autocompleteOpen ? [] : aboveWidgetLines;
         const activeStatusContainerLines = autocompleteOpen ? [] : statusContainerLines;
-        const topLines = autocompleteOpen ? [] : renderPowerlineTopLines(width, theme);
+        const topLines = renderPowerlineTopLines(width, theme);
         const secondaryLines = autocompleteOpen ? [] : [...renderPowerlineSecondaryLines(width, theme), ...belowWidgetLines];
         const transcriptLines = autocompleteOpen ? [] : renderBashTranscriptLines(width, theme);
         const lastPromptLines = autocompleteOpen ? [] : renderLastPromptLines(width);
         const maxClusterRows = Math.max(1, terminalRows - 1);
+        const reservedTopLineCount = topLines.length;
         const maxPopupLineCount = autocompleteOpen
-          ? Math.max(1, maxClusterRows - Math.max(1, Math.min(editorLines.length, 3)))
+          ? Math.max(1, maxClusterRows - reservedTopLineCount - Math.max(1, Math.min(editorLines.length, 3)))
           : 0;
         const autocompletePopupLines = autocompleteOpen
           ? capAutocompletePopupLines(rawAutocompletePopupLines, maxPopupLineCount)
@@ -2359,17 +2360,17 @@ export default function powerlineFooter(pi: ExtensionAPI) {
         const statusLines = autocompleteOpen
           ? autocompletePopupLines
           : [...activeAboveWidgetLines, ...powerlineStatusLines, ...activeStatusContainerLines];
-        const reservedStatusLineCount = statusLines.length;
-        const maxEditorLineCount = Math.max(1, terminalRows - 1 - reservedStatusLineCount);
+        const reservedChromeLineCount = statusLines.length + reservedTopLineCount;
+        const maxEditorLineCount = Math.max(1, terminalRows - 1 - reservedChromeLineCount);
         const reservedEditorLines = autocompleteOpen && editorLines.length > maxEditorLineCount
           ? editorLines.slice(0, maxEditorLineCount)
           : editorLines;
         return renderFixedEditorCluster({
           width,
           terminalRows,
-          // During autocomplete, dedicate the fixed cluster to the popup plus
-          // editor. Extra status/powerline rows can push the first slash option
-          // above the fixed viewport while it remains selected internally.
+          // During autocomplete, keep the popup above the powerline top row and
+          // reserve enough room for both that row and the editor. Extra status
+          // rows stay hidden so the selected slash option cannot be clipped.
           statusLines,
           topLines,
           editorLines: reservedEditorLines,
