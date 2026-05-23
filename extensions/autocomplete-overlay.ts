@@ -20,7 +20,7 @@ declare global {
   var __piAutocompleteOverlayPatch: AutocompletePatchState | undefined;
 }
 
-const PATCH_VERSION = 5;
+const PATCH_VERSION = 6;
 
 function stripAnsi(line: string): string {
   return line.replace(/\x1b\][^\x07]*(?:\x07|\x1b\\)/g, "").replace(/\x1b\[[0-9;?]*[ -/]*[@-~]/g, "");
@@ -96,9 +96,13 @@ function installAutocompletePopupPatch(): void {
     const leftPadding = " ".repeat(paddingX);
     const rightPadding = leftPadding;
     const popupLines = autocompleteLines.map((line) => `${leftPadding}${line}${rightPadding}`);
-    this.__piAutocompletePopupLineCount = popupLines.length;
+    // Keep one spacer row above the popup. Some terminal/powerline layouts draw
+    // directly against the top autocomplete row, which can make the selected
+    // first slash command occupy space but appear clipped/blank.
+    const popupBlock = ["", ...popupLines];
+    this.__piAutocompletePopupLineCount = popupBlock.length;
 
-    return [...popupLines, ...editorLines];
+    return [...popupBlock, ...editorLines];
   };
 
   if (originalClearAutocompleteUi) {
