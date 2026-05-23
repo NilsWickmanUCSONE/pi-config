@@ -2227,6 +2227,25 @@ export default function powerlineFooter(pi: ExtensionAPI) {
     return lines.slice(-16);
   }
 
+  function stripAnsiForAutocompleteSelection(line: string): string {
+    return line.replace(/\x1b\][^\x07]*(?:\x07|\x1b\\)/g, "").replace(/\x1b\[[0-9;?]*[ -/]*[@-~]/g, "");
+  }
+
+  function capAutocompletePopupLines(lines: string[], count: number): string[] {
+    if (count <= 0) return [];
+    if (lines.length <= count) return lines;
+
+    // SelectList keeps the selected item in its own state even when our fixed
+    // editor cluster has to cap rows. Keep the selected row visible instead of
+    // blindly taking the tail, otherwise the first slash command can be selected
+    // but clipped off the top of the UI.
+    const selectedRow = lines.findIndex((line) => stripAnsiForAutocompleteSelection(line).trimStart().startsWith("→ "));
+    if (selectedRow === -1) return lines.slice(0, count);
+
+    const start = Math.max(0, Math.min(selectedRow - Math.floor(count / 2), lines.length - count));
+    return lines.slice(start, start + count);
+  }
+
   function renderLastPromptLines(width: number): string[] {
     if (bashModeActive || !showLastPrompt || !lastUserPrompt) return [];
 
@@ -2316,29 +2335,42 @@ export default function powerlineFooter(pi: ExtensionAPI) {
         const autocompletePopupLineCount = typeof currentEditor?.__piAutocompletePopupLineCount === "number"
           ? Math.max(0, Math.min(currentEditor.__piAutocompletePopupLineCount, rawEditorLines.length))
           : 0;
-        const autocompletePopupLines = autocompletePopupLineCount > 0
+        const autocompleteOpen = autocompletePopupLineCount > 0;
+        const rawAutocompletePopupLines = autocompleteOpen
           ? rawEditorLines.slice(0, autocompletePopupLineCount)
           : [];
-        const editorLines = autocompletePopupLineCount > 0
+        const editorLines = autocompleteOpen
           ? rawEditorLines.slice(autocompletePopupLineCount)
           : rawEditorLines;
-        const powerlineStatusLines = renderPowerlineStatusLines(width);
-        const topLines = autocompletePopupLineCount > 0 ? [] : renderPowerlineTopLines(width, theme);
-        const secondaryLines = autocompletePopupLineCount > 0 ? [] : [...renderPowerlineSecondaryLines(width, theme), ...belowWidgetLines];
-        const transcriptLines = autocompletePopupLineCount > 0 ? [] : renderBashTranscriptLines(width, theme);
-        const lastPromptLines = autocompletePopupLineCount > 0 ? [] : renderLastPromptLines(width);
-        const reservedStatusLineCount = autocompletePopupLines.length + aboveWidgetLines.length + powerlineStatusLines.length + statusContainerLines.length;
+        const powerlineStatusLines = autocompleteOpen ? [] : renderPowerlineStatusLines(width);
+        const activeAboveWidgetLines = autocompleteOpen ? [] : aboveWidgetLines;
+        const activeStatusContainerLines = autocompleteOpen ? [] : statusContainerLines;
+        const topLines = autocompleteOpen ? [] : renderPowerlineTopLines(width, theme);
+        const secondaryLines = autocompleteOpen ? [] : [...renderPowerlineSecondaryLines(width, theme), ...belowWidgetLines];
+        const transcriptLines = autocompleteOpen ? [] : renderBashTranscriptLines(width, theme);
+        const lastPromptLines = autocompleteOpen ? [] : renderLastPromptLines(width);
+        const maxClusterRows = Math.max(1, terminalRows - 1);
+        const maxPopupLineCount = autocompleteOpen
+          ? Math.max(1, maxClusterRows - Math.max(1, Math.min(editorLines.length, 3)))
+          : 0;
+        const autocompletePopupLines = autocompleteOpen
+          ? capAutocompletePopupLines(rawAutocompletePopupLines, maxPopupLineCount)
+          : [];
+        const statusLines = autocompleteOpen
+          ? autocompletePopupLines
+          : [...activeAboveWidgetLines, ...powerlineStatusLines, ...activeStatusContainerLines];
+        const reservedStatusLineCount = statusLines.length;
         const maxEditorLineCount = Math.max(1, terminalRows - 1 - reservedStatusLineCount);
-        const reservedEditorLines = autocompletePopupLineCount > 0 && editorLines.length > maxEditorLineCount
+        const reservedEditorLines = autocompleteOpen && editorLines.length > maxEditorLineCount
           ? editorLines.slice(0, maxEditorLineCount)
           : editorLines;
         return renderFixedEditorCluster({
           width,
           terminalRows,
-          // Put autocomplete in the fixed cluster above the powerline/status row.
-          // While autocomplete is open, hide optional cluster bands so SelectList's
-          // selected row and scroll indicator are not clipped by takeTail().
-          statusLines: [...autocompletePopupLines, ...aboveWidgetLines, ...powerlineStatusLines, ...statusContainerLines],
+          // During autocomplete, dedicate the fixed cluster to the popup plus
+          // editor. Extra status/powerline rows can push the first slash option
+          // above the fixed viewport while it remains selected internally.
+          statusLines,
           topLines,
           editorLines: reservedEditorLines,
           secondaryLines,
