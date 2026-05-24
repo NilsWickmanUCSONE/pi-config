@@ -32,7 +32,9 @@ else
 fi
 
 # Rebase before pushing so another machine can update the same private repo.
-if ! git pull --rebase --autostash "$REMOTE" "$BRANCH"; then
+# During rebase conflicts, prefer the local machine's committed state.
+# Note: for `git rebase`, `-X theirs` means the commit being replayed (our local commit).
+if ! git pull --rebase --autostash -X theirs "$REMOTE" "$BRANCH"; then
   echo "Pull/rebase failed; leaving changes for manual resolution"
   exit 1
 fi
