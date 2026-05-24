@@ -31,6 +31,8 @@ link_item() {
 }
 
 link_item settings.json
+link_item SYSTEM.md
+link_item APPEND_SYSTEM.md
 link_item extensions
 link_item skills
 link_item prompts
