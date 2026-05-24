@@ -11,7 +11,8 @@
       "extensions": [
         "+index.ts"
       ]
-    }
+    },
+    "npm:pi-mcp-adapter"
   ],
   "enableInstallTelemetry": false,
   "theme": "forge-ember-oxide",
