@@ -26,7 +26,7 @@ export const PRESETS: Record<StatusLinePreset, PresetDef> = {
     leftSegments: ["model", "thinking", "shell_mode", "path", "git", "context_pct"],
     rightSegments: [],
     secondarySegments: ["extension_statuses"],
-    separator: "powerline-thin",
+    separator: "pipe",
     colors: DEFAULT_COLORS,
     segmentOptions: {
       model: { showThinkingLevel: false },
@@ -38,7 +38,7 @@ export const PRESETS: Record<StatusLinePreset, PresetDef> = {
   minimal: {
     leftSegments: ["shell_mode", "path", "git"],
     rightSegments: ["context_pct"],
-    separator: "slash",
+    separator: "pipe",
     colors: MINIMAL_COLORS,
     segmentOptions: {
       path: { mode: "basename" },
@@ -49,7 +49,7 @@ export const PRESETS: Record<StatusLinePreset, PresetDef> = {
   compact: {
     leftSegments: ["model", "shell_mode", "git"],
     rightSegments: ["context_pct"],
-    separator: "powerline-thin",
+    separator: "pipe",
     colors: DEFAULT_COLORS,
     segmentOptions: {
       model: { showThinkingLevel: false },
@@ -60,7 +60,7 @@ export const PRESETS: Record<StatusLinePreset, PresetDef> = {
   full: {
     leftSegments: ["hostname", "model", "thinking", "shell_mode", "path", "git"],
     rightSegments: ["token_in", "token_out", "context_pct", "time_spent", "time", "extension_statuses"],
-    separator: "powerline",
+    separator: "pipe",
     colors: DEFAULT_COLORS,
     segmentOptions: {
       model: { showThinkingLevel: false },
@@ -73,7 +73,7 @@ export const PRESETS: Record<StatusLinePreset, PresetDef> = {
   nerd: {
     leftSegments: ["hostname", "model", "thinking", "shell_mode", "path", "git", "session"],
     rightSegments: ["token_in", "token_out", "context_pct", "context_total", "time_spent", "time", "extension_statuses"],
-    separator: "powerline",
+    separator: "pipe",
     colors: NERD_COLORS,
     segmentOptions: {
       model: { showThinkingLevel: false },
@@ -86,7 +86,7 @@ export const PRESETS: Record<StatusLinePreset, PresetDef> = {
   ascii: {
     leftSegments: ["model", "thinking", "shell_mode", "path", "git"],
     rightSegments: ["token_total", "context_pct"],
-    separator: "ascii",
+    separator: "pipe",
     colors: MINIMAL_COLORS,
     segmentOptions: {
       model: { showThinkingLevel: false },
@@ -98,7 +98,7 @@ export const PRESETS: Record<StatusLinePreset, PresetDef> = {
   custom: {
     leftSegments: ["model", "thinking", "shell_mode", "path", "git"],
     rightSegments: ["token_total", "context_pct"],
-    separator: "powerline-thin",
+    separator: "pipe",
     colors: DEFAULT_COLORS,
     segmentOptions: {
       model: { showThinkingLevel: false },
